@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:groovin_widgets/groovin_widgets.dart';
 import 'package:ionicons/ionicons.dart';
+import 'src/camera_object.dart';
 
 void main() {
   runApp(MyApp());
@@ -22,17 +23,13 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
   final _formKey = GlobalKey<FormState>();
-  List<Color> buttonColors = [
-    Colors.grey,
-    Colors.green
-  ];
+  List<Color> buttonColors = [Colors.grey, Colors.green];
   List<Icon> icons = [
     Icon(
       Ionicons.ellipse_outline,
@@ -56,10 +53,9 @@ class _MyHomePageState extends State<MyHomePage> {
         child: AppBar(
           backgroundColor: Colors.red,
           elevation: 12,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text(
-            "Avalanche Safety App"
-          ),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text("Avalanche Safety App"),
         ),
       ),
       body: Form(
@@ -79,15 +75,19 @@ class _MyHomePageState extends State<MyHomePage> {
                         Ionicons.power,
                         color: buttonColors[buttonVal],
                       ),
-                      onPressed: (){
-                        if(buttonVal == 0){
-                          setState(() {
-                            buttonVal = 1;
-                          });
-                        }else{
-                          setState(() {
-                            buttonVal = 0;
-                          });
+                      onPressed: () {
+                        if (val1 == 1 && val2 == 1 && val3 == 1) {
+                          if (buttonVal == 0) {
+                            setState(() {
+                              buttonVal = 1;
+                            });
+                          } else {
+                            setState(() {
+                              buttonVal = 0;
+                            });
+                          }
+                        } else {
+                          return;
                         }
                       },
                       backgroundColor: Colors.white,
@@ -100,28 +100,25 @@ class _MyHomePageState extends State<MyHomePage> {
               padding: const EdgeInsets.all(8.0),
               child: GroovinExpansionTile(
                 defaultTrailingIconColor: Colors.white,
-                  boxDecoration: BoxDecoration(
+                boxDecoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(15.0),
-                    color: Colors.red[900]
-                  ),
-                  leading: icons[val1],
-                  title: Text(
-                      "Motor Connected",
-                    style: TextStyle(
-                      color: Colors.white
-                    ),
-                  ),
+                    color: Colors.red[900]),
+                leading: icons[val1],
+                title: Text(
+                  "Motor Connected",
+                  style: TextStyle(color: Colors.white),
+                ),
                 children: [
                   ElevatedButton(
-                    style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all<Color>(Colors.red[900]!)
-                    ),
-                      onPressed: (){
-                        if(val1 == 0){
+                      style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.all<Color>(
+                              Colors.red[900]!)),
+                      onPressed: () {
+                        if (val1 == 0) {
                           setState(() {
                             val1 = 1;
                           });
-                        }else{
+                        } else {
                           setState(() {
                             val1 = 0;
                           });
@@ -129,11 +126,8 @@ class _MyHomePageState extends State<MyHomePage> {
                       },
                       child: Text(
                         "Connect",
-                        style: TextStyle(
-                          color: Colors.white
-                        ),
-                      )
-                  )
+                        style: TextStyle(color: Colors.white),
+                      ))
                 ],
               ),
             ),
@@ -143,26 +137,23 @@ class _MyHomePageState extends State<MyHomePage> {
                 defaultTrailingIconColor: Colors.white,
                 boxDecoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(15.0),
-                    color: Colors.red[900]
-                ),
+                    color: Colors.red[900]),
                 leading: icons[val2],
                 title: Text(
                   "Sensors Online",
-                  style: TextStyle(
-                      color: Colors.white
-                  ),
+                  style: TextStyle(color: Colors.white),
                 ),
                 children: [
                   ElevatedButton(
                       style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.all<Color>(Colors.red[900]!)
-                      ),
-                      onPressed: (){
-                        if(val2 == 0){
+                          backgroundColor: MaterialStateProperty.all<Color>(
+                              Colors.red[900]!)),
+                      onPressed: () {
+                        if (val2 == 0) {
                           setState(() {
                             val2 = 1;
                           });
-                        }else{
+                        } else {
                           setState(() {
                             val2 = 0;
                           });
@@ -170,11 +161,8 @@ class _MyHomePageState extends State<MyHomePage> {
                       },
                       child: Text(
                         "Connect",
-                        style: TextStyle(
-                            color: Colors.white
-                        ),
-                      )
-                  )
+                        style: TextStyle(color: Colors.white),
+                      ))
                 ],
               ),
             ),
@@ -184,26 +172,23 @@ class _MyHomePageState extends State<MyHomePage> {
                 defaultTrailingIconColor: Colors.white,
                 boxDecoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(15.0),
-                    color: Colors.red[900]
-                ),
+                    color: Colors.red[900]),
                 leading: icons[val3],
                 title: Text(
                   "Trigger Connected",
-                  style: TextStyle(
-                      color: Colors.white
-                  ),
+                  style: TextStyle(color: Colors.white),
                 ),
                 children: [
                   ElevatedButton(
                       style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.all<Color>(Colors.red[900]!)
-                      ),
-                      onPressed: (){
-                        if(val3 == 0){
+                          backgroundColor: MaterialStateProperty.all<Color>(
+                              Colors.red[900]!)),
+                      onPressed: () {
+                        if (val3 == 0) {
                           setState(() {
                             val3 = 1;
                           });
-                        }else{
+                        } else {
                           setState(() {
                             val3 = 0;
                           });
@@ -211,17 +196,14 @@ class _MyHomePageState extends State<MyHomePage> {
                       },
                       child: Text(
                         "Connect",
-                        style: TextStyle(
-                            color: Colors.white
-                        ),
-                      )
-                  )
+                        style: TextStyle(color: Colors.white),
+                      ))
                 ],
               ),
             ),
+            Expanded(child: CameraTest())
           ],
         ),
-
       ),
     );
   }
