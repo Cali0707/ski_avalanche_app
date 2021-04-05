@@ -1,16 +1,16 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:math';
+
 import 'package:flutter/material.dart';
+import 'package:highlight_text/highlight_text.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:avatar_glow/avatar_glow.dart';
-import 'package:groovin_widgets/groovin_widgets.dart';
+import 'package:highlight_text/highlight_text.dart';
 
-void main(){
-  runApp(SpeechApp());
-}
 
 class SpeechApp extends StatefulWidget {
   @override
@@ -34,7 +34,8 @@ class _SpeechAppState extends State<SpeechApp> {
   double confidence = 1.0;
   List<LocaleName> _localeNames = [];
   final SpeechToText speech = SpeechToText();
-  List<Color> buttonColors = [Colors.grey, Colors.red];
+  List<Color> buttonColors = [Colors.grey, Colors.green];
+  // Map<String, HighlightedWord>? _highlights = {"Test": HighlightedWord(onTap: (){}, textStyle: TextStyle(color: Colors.red))};
 
   @override
   void initState() {
@@ -111,75 +112,53 @@ class _SpeechAppState extends State<SpeechApp> {
         body: Column(children: [
           Container(
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: <Widget>[
                 Padding(
                   padding: const EdgeInsets.all(12.0),
-                  child: OutlineDropdownButton(
-                    onChanged: (selectedVal) => _switchLang(selectedVal),
-                    value: _currentLocaleId,
-                    items: _localeNames
-                        .map(
-                          (localeName) => DropdownMenuItem(
-                        value: localeName.localeId,
-                        child: Text(localeName.name),
+                  child: Center(
+                    child: Text(
+                      "Your keyword is: $lastKeyword",
+                      style: TextStyle(
+                        fontSize: 16
                       ),
-                    )
-                        .toList(),
+                    ),
                   ),
                 ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.all(12.0),
-            child: GroovinExpansionTile(
-              defaultTrailingIconColor: Colors.white,
-              boxDecoration: BoxDecoration(
-                color: Colors.red,
-                borderRadius: BorderRadius.circular(15.0)
-              ),
-              title: Text(
-                  (lastKeyword != '') ? "Your keyword is: $lastKeyword" : "Please select a keyword",
-                style: TextStyle(color: Colors.white),
-              ),
-              children: [
-                Container(
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: <Widget>[
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              primary: Colors.white, // background
-                              onPrimary: Colors.red, // foreground
-                            ),
-                            child: Text('Start'),
-                            onPressed: !_hasSpeech || speech.isListening
-                                ? null
-                                : listenForKeyword,
-                          ),
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              primary: Colors.white, // background
-                              onPrimary: Colors.red, // foreground
-                            ),
-                            child: Text('Stop'),
-                            onPressed: speech.isListening ? stopListening : null,
-                          ),
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              primary: Colors.white, // background
-                              onPrimary: Colors.red, // foreground
-                            ),
-                            child: Text('Cancel'),
-                            onPressed: speech.isListening ? cancelListening : null,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: <Widget>[
+                    ElevatedButton(
+                      child: Text('Start'),
+                      onPressed: !_hasSpeech || speech.isListening
+                          ? null
+                          : listenForKeyword,
+                    ),
+                    ElevatedButton(
+                      child: Text('Stop'),
+                      onPressed: speech.isListening ? stopListening : null,
+                    ),
+                    ElevatedButton(
+                      child: Text('Cancel'),
+                      onPressed: speech.isListening ? cancelListening : null,
+                    ),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: <Widget>[
+                    DropdownButton(
+                      onChanged: (selectedVal) => _switchLang(selectedVal),
+                      value: _currentLocaleId,
+                      items: _localeNames
+                          .map(
+                            (localeName) => DropdownMenuItem(
+                          value: localeName.localeId,
+                          child: Text(localeName.name),
+                        ),
+                      )
+                          .toList(),
+                    ),
+                  ],
                 )
               ],
             ),
@@ -189,9 +168,9 @@ class _SpeechAppState extends State<SpeechApp> {
             child: Column(
               children: <Widget>[
                 Center(
-                    child: Text(
-                        "Confidence: ${(confidence * 100.0).toStringAsFixed(1)}%"
-                    )
+                  child: Text(
+                    "Confidence: ${(confidence * 100.0).toStringAsFixed(1)}%"
+                  )
                 ),
                 Padding(
                   padding: const EdgeInsets.all(12.0),
@@ -205,13 +184,7 @@ class _SpeechAppState extends State<SpeechApp> {
                             Ionicons.power,
                             color: buttonColors[buttonVal],
                           ),
-                          onPressed: (){
-                            if(buttonVal == 1){
-                              setState(() {
-                                buttonVal = 0;
-                              });
-                            }
-                          },
+                          onPressed: (){},
                           backgroundColor: Colors.white,
                         ),
                       ),
@@ -311,3 +284,4 @@ class _SpeechAppState extends State<SpeechApp> {
     print(selectedVal);
   }
 }
+

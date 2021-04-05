@@ -27,7 +27,9 @@
 	<key>NSCameraUsageDescription</key>
     <string>Can I use the camera please?</string>
     <key>NSMicrophoneUsageDescription</key>
-    <string>Can I use the mic please?</string>
+    <string>This app would like to use the Microphone to listen for keywords?</string>
+    <key>NSSpeechRecognitionUsageDescription</key>
+    <string>This app would like to use Speech Recognition to decode the trigger word.</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
 	<key>UISupportedInterfaceOrientations</key>
