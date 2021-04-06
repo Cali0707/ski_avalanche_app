@@ -7,6 +7,7 @@ import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:avatar_glow/avatar_glow.dart';
 import 'package:groovin_widgets/groovin_widgets.dart';
+import 'package:ndialog/ndialog.dart';
 
 //TODO: Add google maps and place_picker widget into page
 //TODO: Find a better way of displaying trigger event
@@ -59,6 +60,8 @@ class _SpeechAppState extends State<SpeechApp> {
 
       var systemLocale = await speech.systemLocale();
       _currentLocaleId = systemLocale!.localeId;
+    } else {
+
     }
 
     if (!mounted) return;
@@ -78,13 +81,9 @@ class _SpeechAppState extends State<SpeechApp> {
         setState(() => _isListening = true);
         _speech.listen(
           onResult: (val) => setState(() {
-            _text = val.recognizedWords.toLowerCase().replaceFirst(_previousText, '');
-            // print("$_text\n");
-            if(_text.contains(lastKeyword)){
+            _text = val.recognizedWords.toLowerCase();
+            if(_text.endsWith(lastKeyword)){
               buttonVal = 1;
-            }
-            if(val.hasConfidenceRating && val.confidence > 0.0){
-              confidence = val.confidence;
             }
           }),
         );
@@ -119,35 +118,7 @@ class _SpeechAppState extends State<SpeechApp> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: InputDecorator(
-                    decoration: InputDecoration(
-                      fillColor: Colors.red,
-                      filled: true,
-                      labelStyle: TextStyle(color: Colors.white),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none)
-                    ),
-                    child: DropdownButton(
-                      icon: Icon(Icons.keyboard_arrow_down, color: Colors.white,),
-                      elevation: 0,
-                      isExpanded: true,
-                      underline: SizedBox(height: 0,),
-                      style: TextStyle(color: Colors.white),
-                      dropdownColor: Colors.red,
-                      onChanged: (selectedVal) => _switchLang(selectedVal),
-                      value: _currentLocaleId,
-                      items: _localeNames
-                          .map(
-                            (localeName) => DropdownMenuItem(
-                          value: localeName.localeId,
-                          child: Text(localeName.name),
-                        ),
-                      )
-                          .toList(),
-                    ),
-                  ),
-                ),
+
               ],
             ),
           ),
@@ -163,10 +134,16 @@ class _SpeechAppState extends State<SpeechApp> {
                 (lastKeyword != '') ? "Your trigger word is: $lastKeyword" : "Record a trigger word",
                 style: TextStyle(color: Colors.white, fontSize: 14),
               ),
+              maintainState: true,
               children: [
                 Container(
                   child: Column(
                     children: [
+                      Text(
+                          "Record a trigger word:",
+                        style: TextStyle(color: Colors.white),
+
+                      ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: <Widget>[
@@ -197,6 +174,41 @@ class _SpeechAppState extends State<SpeechApp> {
                             onPressed: speech.isListening ? cancelListening : null,
                           ),
                         ],
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Divider(height: 1, color: Colors.white, thickness: 1,),
+                      ),
+                      Text("Change Language:", style: TextStyle(color: Colors.white),),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: InputDecorator(
+                          decoration: InputDecoration(
+                            fillColor: Colors.red,
+                            filled: true,
+                            labelStyle: TextStyle(color: Colors.white),
+                            enabledBorder: InputBorder.none
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton(
+                              icon: Icon(Icons.keyboard_arrow_down, color: Colors.white,),
+                              elevation: 0,
+                              isExpanded: true,
+                              style: TextStyle(color: Colors.white),
+                              dropdownColor: Colors.red,
+                              onChanged: (selectedVal) => _switchLang(selectedVal),
+                              value: _currentLocaleId,
+                              items: _localeNames
+                                  .map(
+                                    (localeName) => DropdownMenuItem(
+                                  value: localeName.localeId,
+                                  child: Text(localeName.name),
+                                ),
+                              )
+                                  .toList(),
+                            ),
+                          ),
+                        ),
                       ),
                     ],
                   ),
