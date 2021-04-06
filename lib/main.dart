@@ -8,6 +8,11 @@ import 'package:speech_to_text/speech_to_text.dart';
 import 'package:avatar_glow/avatar_glow.dart';
 import 'package:groovin_widgets/groovin_widgets.dart';
 
+//TODO: Add google maps and place_picker widget into page
+//TODO: Find a better way of displaying trigger event
+//TODO: Test
+//TODO: Build for deployment
+
 void main(){
   runApp(SpeechApp());
 }
@@ -24,6 +29,7 @@ class _SpeechAppState extends State<SpeechApp> {
   double minSoundLevel = 50000;
   double maxSoundLevel = -50000;
   String _text = '';
+  String _previousText = '';
   int buttonVal = 0;
   String lastError = '';
   String lastStatus = '';
@@ -72,8 +78,8 @@ class _SpeechAppState extends State<SpeechApp> {
         setState(() => _isListening = true);
         _speech.listen(
           onResult: (val) => setState(() {
-            _text = val.recognizedWords.toLowerCase();
-            print("$_text\n");
+            _text = val.recognizedWords.toLowerCase().replaceFirst(_previousText, '');
+            // print("$_text\n");
             if(_text.contains(lastKeyword)){
               buttonVal = 1;
             }
@@ -115,17 +121,31 @@ class _SpeechAppState extends State<SpeechApp> {
               children: <Widget>[
                 Padding(
                   padding: const EdgeInsets.all(12.0),
-                  child: OutlineDropdownButton(
-                    onChanged: (selectedVal) => _switchLang(selectedVal),
-                    value: _currentLocaleId,
-                    items: _localeNames
-                        .map(
-                          (localeName) => DropdownMenuItem(
-                        value: localeName.localeId,
-                        child: Text(localeName.name),
-                      ),
-                    )
-                        .toList(),
+                  child: InputDecorator(
+                    decoration: InputDecoration(
+                      fillColor: Colors.red,
+                      filled: true,
+                      labelStyle: TextStyle(color: Colors.white),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none)
+                    ),
+                    child: DropdownButton(
+                      icon: Icon(Icons.keyboard_arrow_down, color: Colors.white,),
+                      elevation: 0,
+                      isExpanded: true,
+                      underline: SizedBox(height: 0,),
+                      style: TextStyle(color: Colors.white),
+                      dropdownColor: Colors.red,
+                      onChanged: (selectedVal) => _switchLang(selectedVal),
+                      value: _currentLocaleId,
+                      items: _localeNames
+                          .map(
+                            (localeName) => DropdownMenuItem(
+                          value: localeName.localeId,
+                          child: Text(localeName.name),
+                        ),
+                      )
+                          .toList(),
+                    ),
                   ),
                 ),
               ],
@@ -140,8 +160,8 @@ class _SpeechAppState extends State<SpeechApp> {
                   borderRadius: BorderRadius.circular(15.0)
               ),
               title: Text(
-                (lastKeyword != '') ? "Your keyword is: $lastKeyword" : "Please select a keyword",
-                style: TextStyle(color: Colors.white),
+                (lastKeyword != '') ? "Your trigger word is: $lastKeyword" : "Record a trigger word",
+                style: TextStyle(color: Colors.white, fontSize: 14),
               ),
               children: [
                 Container(
@@ -188,11 +208,6 @@ class _SpeechAppState extends State<SpeechApp> {
             flex: 4,
             child: Column(
               children: <Widget>[
-                Center(
-                    child: Text(
-                        "Confidence: ${(confidence * 100.0).toStringAsFixed(1)}%"
-                    )
-                ),
                 Padding(
                   padding: const EdgeInsets.all(12.0),
                   child: Center(
@@ -279,13 +294,6 @@ class _SpeechAppState extends State<SpeechApp> {
     if(result.recognizedWords != "") {
       setState(() {
         lastKeyword = '${result.recognizedWords}'.toLowerCase();
-        // _highlights = {"$result": HighlightedWord(
-        //     onTap: () => print("$result"),
-        //     textStyle: const TextStyle(
-        //         color: Colors.red,
-        //         fontWeight: FontWeight.bold
-        //     )
-        // )};
       });
     }
   }
@@ -308,6 +316,5 @@ class _SpeechAppState extends State<SpeechApp> {
     setState(() {
       _currentLocaleId = selectedVal;
     });
-    print(selectedVal);
   }
 }
