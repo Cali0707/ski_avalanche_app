@@ -136,11 +136,11 @@ class _SpeechAppState extends State<SpeechApp> {
             child: GroovinExpansionTile(
               defaultTrailingIconColor: Colors.white,
               boxDecoration: BoxDecoration(
-                color: Colors.red,
-                borderRadius: BorderRadius.circular(15.0)
+                  color: Colors.red,
+                  borderRadius: BorderRadius.circular(15.0)
               ),
               title: Text(
-                  (lastKeyword != '') ? "Your keyword is: $lastKeyword" : "Please select a keyword",
+                (lastKeyword != '') ? "Your keyword is: $lastKeyword" : "Please select a keyword",
                 style: TextStyle(color: Colors.white),
               ),
               children: [
