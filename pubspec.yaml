@@ -19,9 +19,8 @@ dependencies:
   groovin_widgets: ^2.0.0
   ionicons: ^0.1.2
   speech_to_text: ^4.1.0-nullsafety
-  highlight_text: ^1.0.0
-  avatar_glow: ^2.0.1
   ndialog: ^4.0.1
+  circular_check_box: ^1.0.4
 
 
 dev_dependencies:

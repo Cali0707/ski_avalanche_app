@@ -5,7 +5,6 @@ import 'package:ionicons/ionicons.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
-import 'package:avatar_glow/avatar_glow.dart';
 import 'package:groovin_widgets/groovin_widgets.dart';
 import 'package:ndialog/ndialog.dart';
 
@@ -31,7 +30,7 @@ class _SpeechAppState extends State<SpeechApp> {
   double maxSoundLevel = -50000;
   String _text = '';
   String _previousText = '';
-  int buttonVal = 0;
+  bool buttonVal = false;
   String lastError = '';
   String lastStatus = '';
   String lastKeyword = '';
@@ -53,15 +52,13 @@ class _SpeechAppState extends State<SpeechApp> {
     var hasSpeech = await speech.initialize(
         onError: errorListener,
         onStatus: statusListener,
-        debugLogging: true,
+        debugLogging: false,
         finalTimeout: Duration(milliseconds: 0));
     if (hasSpeech) {
       _localeNames = await speech.locales();
 
       var systemLocale = await speech.systemLocale();
       _currentLocaleId = systemLocale!.localeId;
-    } else {
-
     }
 
     if (!mounted) return;
@@ -83,7 +80,9 @@ class _SpeechAppState extends State<SpeechApp> {
           onResult: (val) => setState(() {
             _text = val.recognizedWords.toLowerCase();
             if(_text.endsWith(lastKeyword)){
-              buttonVal = 1;
+              buttonVal = true;
+              _isListening = false;
+              _speech.stop();
             }
           }),
         );
@@ -108,8 +107,7 @@ class _SpeechAppState extends State<SpeechApp> {
           child: AppBar(
             backgroundColor: Colors.red,
             elevation: 12,
-            shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.only(bottomLeft: Radius.circular(20), bottomRight: Radius.circular(20))),
             title: Text("Avalanche Safety App"),
           ),
         ),
@@ -156,6 +154,12 @@ class _SpeechAppState extends State<SpeechApp> {
                             onPressed: !_hasSpeech || speech.isListening
                                 ? null
                                 : listenForKeyword,
+                            // onPressed: (){
+                            //   if(speech.isAvailable && speech.isNotListening){
+                            //     listenForKeyword();
+                            //   }
+                            //   return null;
+                            // },
                           ),
                           ElevatedButton(
                             style: ElevatedButton.styleFrom(
@@ -179,7 +183,7 @@ class _SpeechAppState extends State<SpeechApp> {
                         padding: const EdgeInsets.all(12.0),
                         child: Divider(height: 1, color: Colors.white, thickness: 1,),
                       ),
-                      Text("Change Language:", style: TextStyle(color: Colors.white),),
+                      Text("Change Speech Recognition Language:", style: TextStyle(color: Colors.white),),
                       Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: InputDecorator(
@@ -216,56 +220,62 @@ class _SpeechAppState extends State<SpeechApp> {
               ],
             ),
           ),
-          Expanded(
-            flex: 4,
-            child: Column(
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Center(
-                    child: Container(
-                      height: 150,
-                      width: 150,
-                      child: FittedBox(
-                        child: FloatingActionButton(
-                          child: Icon(
-                            Ionicons.power,
-                            color: buttonColors[buttonVal],
-                          ),
-                          onPressed: (){
-                            if(buttonVal == 1){
-                              setState(() {
-                                buttonVal = 0;
-                              });
-                            }
-                          },
-                          backgroundColor: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+          // Expanded(
+          //   flex: 4,
+          //   child: Column(
+          //     children: <Widget>[
+          //       Padding(
+          //         padding: const EdgeInsets.all(12.0),
+          //         child: Center(
+          //           child: Container(
+          //             height: 150,
+          //             width: 150,
+          //             child: FittedBox(
+          //               child: FloatingActionButton(
+          //                 child: Icon(
+          //                   Ionicons.power,
+          //                   color: buttonColors[buttonVal],
+          //                 ),
+          //                 onPressed: (){
+          //                   if(buttonVal == 1){
+          //                     setState(() {
+          //                       buttonVal = 0;
+          //                     });
+          //                   }
+          //                 },
+          //                 backgroundColor: Colors.white,
+          //               ),
+          //             ),
+          //           ),
+          //         ),
+          //       ),
+          //     ],
+          //   ),
+          // ),
+          ElevatedButton(
+              onPressed: (){
+                _listen();
+              },
+              child: Text(
+                "Start Skiing!"
+              )),
+          CheckboxListTile(
+              value: buttonVal,
+              onChanged: (val){
+                if(buttonVal == true){
+                  setState(() {
+                    buttonVal = false;
+                  });
+                }
+              },
+            title: Text(
+              "System triggered?"
             ),
-          ),
+          )
         ]),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-        floatingActionButton: AvatarGlow(
-          animate: _isListening,
-          glowColor: Colors.red,
-          endRadius: 75.0,
-          duration: const Duration(milliseconds: 2000),
-          repeatPauseDuration: const Duration(milliseconds: 100),
-          repeat: true,
-          child: FloatingActionButton(
-            onPressed: _listen,
-            child: Icon(_isListening ? Icons.mic : Icons.mic_none, color: Colors.white,),
-          ),
-        ),
       ),
     );
   }
-
 
   void stopListening() {
     speech.stop();
@@ -280,7 +290,6 @@ class _SpeechAppState extends State<SpeechApp> {
       level = 0.0;
     });
   }
-
 
   void soundLevelListener(double level) {
     minSoundLevel = min(minSoundLevel, level);
