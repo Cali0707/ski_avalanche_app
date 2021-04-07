@@ -1,21 +1,31 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:ionicons/ionicons.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:groovin_widgets/groovin_widgets.dart';
 import 'package:ndialog/ndialog.dart';
 
-//TODO: Add google maps and place_picker widget into page
-//TODO: Find a better way of displaying trigger event
-//TODO: Test
-//TODO: Build for deployment
 
 void main(){
-  runApp(SpeechApp());
+  runApp(AvalancheApp());
 }
+
+class AvalancheApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+      primarySwatch: Colors.red,
+      visualDensity: VisualDensity.adaptivePlatformDensity,
+    ),
+      home: SpeechApp(),
+    );
+  }
+}
+
 
 class SpeechApp extends StatefulWidget {
   @override
@@ -95,185 +105,164 @@ class _SpeechAppState extends State<SpeechApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(
-        primarySwatch: Colors.red,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
+    return Scaffold(
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(75),
+        child: AppBar(
+          backgroundColor: Colors.red,
+          elevation: 12,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.only(bottomLeft: Radius.circular(20), bottomRight: Radius.circular(20))),
+          title: Text("Avalanche Safety App"),
+          actions: [
+            IconButton(
+                onPressed: (){
+                  NDialog(
+                    title: Text(
+                      "Ski Avalanche App"
+                    ),
+                    content: Text(
+                      "To start, record a trigger word, then all you need to do is start skiing! Once you say your trigger word after pressing 'Start Skiing!', the checkbox will be ticked to indicate that the system heard you. Please note that as this is only a prototype, there is no bluetooth connection to the airbag, or ability to select a location to get snow density."
+                    ),
+                  ).show(context, transitionType: DialogTransitionType.Shrink);
+                },
+                icon: Icon(Icons.help_outline_outlined, color: Colors.white,)
+            )
+          ],
+        ),
       ),
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        appBar: PreferredSize(
-          preferredSize: Size.fromHeight(75),
-          child: AppBar(
-            backgroundColor: Colors.red,
-            elevation: 12,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.only(bottomLeft: Radius.circular(20), bottomRight: Radius.circular(20))),
-            title: Text("Avalanche Safety App"),
+      body: Column(children: [
+        Container(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: <Widget>[
+
+            ],
           ),
         ),
-        body: Column(children: [
-          Container(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: <Widget>[
-
-              ],
+        Padding(
+          padding: EdgeInsets.all(12.0),
+          child: GroovinExpansionTile(
+            defaultTrailingIconColor: Colors.white,
+            boxDecoration: BoxDecoration(
+                color: Colors.red,
+                borderRadius: BorderRadius.circular(15.0)
             ),
-          ),
-          Padding(
-            padding: EdgeInsets.all(12.0),
-            child: GroovinExpansionTile(
-              defaultTrailingIconColor: Colors.white,
-              boxDecoration: BoxDecoration(
-                  color: Colors.red,
-                  borderRadius: BorderRadius.circular(15.0)
-              ),
-              title: Text(
-                (lastKeyword != '') ? "Your trigger word is: $lastKeyword" : "Record a trigger word",
-                style: TextStyle(color: Colors.white, fontSize: 14),
-              ),
-              maintainState: true,
-              children: [
-                Container(
-                  child: Column(
-                    children: [
-                      Text(
-                          "Record a trigger word:",
-                        style: TextStyle(color: Colors.white),
+            title: Text(
+              (lastKeyword != '') ? "Your trigger word is: $lastKeyword" : "Record a trigger word",
+              style: TextStyle(color: Colors.white, fontSize: 14),
+            ),
+            maintainState: true,
+            children: [
+              Container(
+                child: Column(
+                  children: [
+                    Text(
+                        "Record a trigger word:",
+                      style: TextStyle(color: Colors.white),
 
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: <Widget>[
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              primary: Colors.white, // background
-                              onPrimary: Colors.red, // foreground
-                            ),
-                            child: Text('Start'),
-                            onPressed: !_hasSpeech || speech.isListening
-                                ? null
-                                : listenForKeyword,
-                            // onPressed: (){
-                            //   if(speech.isAvailable && speech.isNotListening){
-                            //     listenForKeyword();
-                            //   }
-                            //   return null;
-                            // },
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: <Widget>[
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            primary: Colors.white, // background
+                            onPrimary: Colors.red, // foreground
                           ),
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              primary: Colors.white, // background
-                              onPrimary: Colors.red, // foreground
-                            ),
-                            child: Text('Stop'),
-                            onPressed: speech.isListening ? stopListening : null,
+                          child: Text('Start'),
+                          onPressed: !_hasSpeech || speech.isListening
+                              ? null
+                              : listenForKeyword,
+                          // onPressed: (){
+                          //   if(speech.isAvailable && speech.isNotListening){
+                          //     listenForKeyword();
+                          //   }
+                          //   return null;
+                          // },
+                        ),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            primary: Colors.white, // background
+                            onPrimary: Colors.red, // foreground
                           ),
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              primary: Colors.white, // background
-                              onPrimary: Colors.red, // foreground
-                            ),
-                            child: Text('Cancel'),
-                            onPressed: speech.isListening ? cancelListening : null,
+                          child: Text('Stop'),
+                          onPressed: speech.isListening ? stopListening : null,
+                        ),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            primary: Colors.white, // background
+                            onPrimary: Colors.red, // foreground
                           ),
-                        ],
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: Divider(height: 1, color: Colors.white, thickness: 1,),
-                      ),
-                      Text("Change Speech Recognition Language:", style: TextStyle(color: Colors.white),),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: InputDecorator(
-                          decoration: InputDecoration(
-                            fillColor: Colors.red,
-                            filled: true,
-                            labelStyle: TextStyle(color: Colors.white),
-                            enabledBorder: InputBorder.none
-                          ),
-                          child: DropdownButtonHideUnderline(
-                            child: DropdownButton(
-                              icon: Icon(Icons.keyboard_arrow_down, color: Colors.white,),
-                              elevation: 0,
-                              isExpanded: true,
-                              style: TextStyle(color: Colors.white),
-                              dropdownColor: Colors.red,
-                              onChanged: (selectedVal) => _switchLang(selectedVal),
-                              value: _currentLocaleId,
-                              items: _localeNames
-                                  .map(
-                                    (localeName) => DropdownMenuItem(
-                                  value: localeName.localeId,
-                                  child: Text(localeName.name),
-                                ),
-                              )
-                                  .toList(),
-                            ),
+                          child: Text('Cancel'),
+                          onPressed: speech.isListening ? cancelListening : null,
+                        ),
+                      ],
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Divider(height: 1, color: Colors.white, thickness: 1,),
+                    ),
+                    Text("Change Speech Recognition Language:", style: TextStyle(color: Colors.white),),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: InputDecorator(
+                        decoration: InputDecoration(
+                          fillColor: Colors.red,
+                          filled: true,
+                          labelStyle: TextStyle(color: Colors.white),
+                          enabledBorder: InputBorder.none
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton(
+                            icon: Icon(Icons.keyboard_arrow_down, color: Colors.white,),
+                            elevation: 0,
+                            isExpanded: true,
+                            style: TextStyle(color: Colors.white),
+                            dropdownColor: Colors.red,
+                            onChanged: (selectedVal) => _switchLang(selectedVal),
+                            value: _currentLocaleId,
+                            items: _localeNames
+                                .map(
+                                  (localeName) => DropdownMenuItem(
+                                value: localeName.localeId,
+                                child: Text(localeName.name),
+                              ),
+                            )
+                                .toList(),
                           ),
                         ),
                       ),
-                    ],
-                  ),
-                )
-              ],
-            ),
+                    ),
+                  ],
+                ),
+              )
+            ],
           ),
-          // Expanded(
-          //   flex: 4,
-          //   child: Column(
-          //     children: <Widget>[
-          //       Padding(
-          //         padding: const EdgeInsets.all(12.0),
-          //         child: Center(
-          //           child: Container(
-          //             height: 150,
-          //             width: 150,
-          //             child: FittedBox(
-          //               child: FloatingActionButton(
-          //                 child: Icon(
-          //                   Ionicons.power,
-          //                   color: buttonColors[buttonVal],
-          //                 ),
-          //                 onPressed: (){
-          //                   if(buttonVal == 1){
-          //                     setState(() {
-          //                       buttonVal = 0;
-          //                     });
-          //                   }
-          //                 },
-          //                 backgroundColor: Colors.white,
-          //               ),
-          //             ),
-          //           ),
-          //         ),
-          //       ),
-          //     ],
-          //   ),
-          // ),
-          ElevatedButton(
-              onPressed: (){
-                _listen();
-              },
-              child: Text(
-                "Start Skiing!"
-              )),
-          CheckboxListTile(
-              value: buttonVal,
-              onChanged: (val){
-                if(buttonVal == true){
-                  setState(() {
-                    buttonVal = false;
-                  });
-                }
-              },
-            title: Text(
-              "System triggered?"
-            ),
-          )
-        ]),
-      ),
+        ),
+        ElevatedButton(
+            onPressed: (){
+              lastKeyword != '' ? _listen() : NDialog(
+                title: Text("Warning!"),
+                content: Text("You have not recorded a trigger word!"),
+              ).show(context);
+            },
+            child: Text(
+              "Start Skiing!"
+            )),
+        CheckboxListTile(
+            value: buttonVal,
+            onChanged: (val){
+              if(buttonVal == true){
+                setState(() {
+                  buttonVal = false;
+                });
+              }
+            },
+          title: Text(
+            "System triggered?"
+          ),
+        )
+      ]),
     );
   }
 
