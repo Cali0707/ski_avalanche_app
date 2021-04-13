@@ -21,6 +21,7 @@ dependencies:
   speech_to_text: ^4.1.0-nullsafety
   ndialog: ^4.0.1
   circular_check_box: ^1.0.4
+  flutter_blue: ^0.8.0
 
 
 dev_dependencies:

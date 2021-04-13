@@ -6,6 +6,7 @@ import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:groovin_widgets/groovin_widgets.dart';
 import 'package:ndialog/ndialog.dart';
+import 'package:flutter_blue/flutter_blue.dart';
 
 
 void main(){
@@ -50,12 +51,68 @@ class _SpeechAppState extends State<SpeechApp> {
   double confidence = 1.0;
   List<LocaleName> _localeNames = [];
   final SpeechToText speech = SpeechToText();
-  List<Color> buttonColors = [Colors.grey, Colors.red];
+  FlutterBlue ble = FlutterBlue.instance;
+  late BluetoothDevice device;
+  late BluetoothCharacteristic characteristic;
+
 
   @override
   void initState() {
     super.initState();
     initSpeechState();
+    initBluetoothState();
+  }
+
+  Future<void> initBluetoothState() async {
+    ble.state.listen((state){
+      if(state == BluetoothState.on){
+        scanDevices();
+      }else{
+        print("Bluetooth off");
+      }
+    });
+  }
+
+  void scanDevices() async {
+    ble.scan(timeout: Duration(seconds: 20)).listen((result) async {
+      print(result.device.name);
+      if(result.device.name == "MKR WiFi 1010" || result.device.name == "Arduino"){
+        setState(() {
+          device = result.device;
+          ble.stopScan();
+        });
+      }
+    });
+  }
+
+  void triggerMotor() async {
+    await characteristic.write([100],);
+    await Future.delayed(Duration(seconds: 2));
+    await characteristic.write([0],);
+  }
+
+  void connectToDevice() async {
+    await device.connect();
+    discoverServices();
+    setState(() {
+      buttonVal = true;
+    });
+  }
+
+  void discoverServices() async {
+    List<BluetoothService> services = await device.discoverServices();
+    services.forEach((service) {
+      print("Service: ${service.uuid.toString()}");
+      if(service.uuid.toString() == "0000180a-0000-1000-8000-00805f9b34fb"){
+        service.characteristics.forEach((c) {
+          if(c.uuid.toString() == "00002a57-0000-1000-8000-00805f9b34fb"){
+            setState(() {
+              characteristic = c;
+            });
+          }
+        });
+      }
+    });
   }
 
   Future<void> initSpeechState() async {
@@ -78,6 +135,14 @@ class _SpeechAppState extends State<SpeechApp> {
     });
   }
 
+  void disconnect() async {
+    await device.disconnect();
+    setState(() {
+      buttonVal = false;
+    });
+  }
+
+
   void _listen() async {
     if (!_isListening) {
       bool available = await _speech.initialize(
@@ -90,6 +155,7 @@ class _SpeechAppState extends State<SpeechApp> {
           onResult: (val) => setState(() {
             _text = val.recognizedWords.toLowerCase();
             if(_text.endsWith(lastKeyword)){
+              triggerMotor();
               buttonVal = true;
               _isListening = false;
               _speech.stop();
@@ -130,139 +196,158 @@ class _SpeechAppState extends State<SpeechApp> {
           ],
         ),
       ),
-      body: Column(children: [
-        Container(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: <Widget>[
+      body: SafeArea(
+        child: Column(children: [
+          Container(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: <Widget>[
 
-            ],
+              ],
+            ),
           ),
-        ),
-        Padding(
-          padding: EdgeInsets.all(12.0),
-          child: GroovinExpansionTile(
-            defaultTrailingIconColor: Colors.white,
-            boxDecoration: BoxDecoration(
-                color: Colors.red,
-                borderRadius: BorderRadius.circular(15.0)
-            ),
-            title: Text(
-              (lastKeyword != '') ? "Your trigger word is: $lastKeyword" : "Record a trigger word",
-              style: TextStyle(color: Colors.white, fontSize: 14),
-            ),
-            maintainState: true,
-            children: [
-              Container(
-                child: Column(
-                  children: [
-                    Text(
-                        "Record a trigger word:",
-                      style: TextStyle(color: Colors.white),
+          Padding(
+            padding: EdgeInsets.all(12.0),
+            child: GroovinExpansionTile(
+              defaultTrailingIconColor: Colors.white,
+              boxDecoration: BoxDecoration(
+                  color: Colors.red,
+                  borderRadius: BorderRadius.circular(15.0)
+              ),
+              title: Text(
+                (lastKeyword != '') ? "Your trigger word is: $lastKeyword" : "Record a trigger word",
+                style: TextStyle(color: Colors.white, fontSize: 14),
+              ),
+              maintainState: true,
+              children: [
+                Container(
+                  child: Column(
+                    children: [
+                      Text(
+                          "Record a trigger word:",
+                        style: TextStyle(color: Colors.white),
 
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: <Widget>[
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            primary: Colors.white, // background
-                            onPrimary: Colors.red, // foreground
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: <Widget>[
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              primary: Colors.white, // background
+                              onPrimary: Colors.red, // foreground
+                            ),
+                            child: Text('Start'),
+                            onPressed: !_hasSpeech || speech.isListening
+                                ? null
+                                : listenForKeyword,
+                            // onPressed: (){
+                            //   if(speech.isAvailable && speech.isNotListening){
+                            //     listenForKeyword();
+                            //   }
+                            //   return null;
+                            // },
                           ),
-                          child: Text('Start'),
-                          onPressed: !_hasSpeech || speech.isListening
-                              ? null
-                              : listenForKeyword,
-                          // onPressed: (){
-                          //   if(speech.isAvailable && speech.isNotListening){
-                          //     listenForKeyword();
-                          //   }
-                          //   return null;
-                          // },
-                        ),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            primary: Colors.white, // background
-                            onPrimary: Colors.red, // foreground
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              primary: Colors.white, // background
+                              onPrimary: Colors.red, // foreground
+                            ),
+                            child: Text('Stop'),
+                            onPressed: speech.isListening ? stopListening : null,
                           ),
-                          child: Text('Stop'),
-                          onPressed: speech.isListening ? stopListening : null,
-                        ),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            primary: Colors.white, // background
-                            onPrimary: Colors.red, // foreground
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              primary: Colors.white, // background
+                              onPrimary: Colors.red, // foreground
+                            ),
+                            child: Text('Cancel'),
+                            onPressed: speech.isListening ? cancelListening : null,
                           ),
-                          child: Text('Cancel'),
-                          onPressed: speech.isListening ? cancelListening : null,
-                        ),
-                      ],
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Divider(height: 1, color: Colors.white, thickness: 1,),
-                    ),
-                    Text("Change Speech Recognition Language:", style: TextStyle(color: Colors.white),),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: InputDecorator(
-                        decoration: InputDecoration(
-                          fillColor: Colors.red,
-                          filled: true,
-                          labelStyle: TextStyle(color: Colors.white),
-                          enabledBorder: InputBorder.none
-                        ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton(
-                            icon: Icon(Icons.keyboard_arrow_down, color: Colors.white,),
-                            elevation: 0,
-                            isExpanded: true,
-                            style: TextStyle(color: Colors.white),
-                            dropdownColor: Colors.red,
-                            onChanged: (selectedVal) => _switchLang(selectedVal),
-                            value: _currentLocaleId,
-                            items: _localeNames
-                                .map(
-                                  (localeName) => DropdownMenuItem(
-                                value: localeName.localeId,
-                                child: Text(localeName.name),
-                              ),
-                            )
-                                .toList(),
+                        ],
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Divider(height: 1, color: Colors.white, thickness: 1,),
+                      ),
+                      Text("Change Speech Recognition Language:", style: TextStyle(color: Colors.white),),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: InputDecorator(
+                          decoration: InputDecoration(
+                            fillColor: Colors.red,
+                            filled: true,
+                            labelStyle: TextStyle(color: Colors.white),
+                            enabledBorder: InputBorder.none
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton(
+                              icon: Icon(Icons.keyboard_arrow_down, color: Colors.white,),
+                              elevation: 0,
+                              isExpanded: true,
+                              style: TextStyle(color: Colors.white),
+                              dropdownColor: Colors.red,
+                              onChanged: (selectedVal) => _switchLang(selectedVal),
+                              value: _currentLocaleId,
+                              items: _localeNames
+                                  .map(
+                                    (localeName) => DropdownMenuItem(
+                                  value: localeName.localeId,
+                                  child: Text(localeName.name),
+                                ),
+                              )
+                                  .toList(),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              )
-            ],
+                    ],
+                  ),
+                )
+              ],
+            ),
           ),
-        ),
-        ElevatedButton(
-            onPressed: (){
-              lastKeyword != '' ? _listen() : NDialog(
-                title: Text("Warning!"),
-                content: Text("You have not recorded a trigger word!"),
-              ).show(context);
-            },
-            child: Text(
-              "Start Skiing!"
-            )),
-        CheckboxListTile(
-            value: buttonVal,
-            onChanged: (val){
-              if(buttonVal == true){
-                setState(() {
-                  buttonVal = false;
-                });
-              }
-            },
-          title: Text(
-            "System triggered?"
+          ElevatedButton(
+              onPressed: (){
+                lastKeyword != '' ? _listen() : NDialog(
+                  title: Text("Warning!"),
+                  content: Text("You have not recorded a trigger word!"),
+                ).show(context);
+              },
+              child: Text(
+                "Start Skiing!"
+              )),
+          CheckboxListTile(
+              value: buttonVal,
+              onChanged: (val){
+                if(buttonVal == true){
+                  setState(() {
+                    buttonVal = false;
+                  });
+                }
+              },
+            title: Text(
+              "Connected to device?"
+            ),
           ),
-        )
-      ]),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                    onPressed: connectToDevice,
+                    child: Text("Connect")),
+                ElevatedButton(
+                    onPressed: disconnect,
+                    child: Text("Disconnect")),
+                // ElevatedButton(
+                //     onPressed: triggerMotor,
+                //     child: Text("Activate"))
+              ],
+            ),
+          )
+        ]),
+      ),
     );
   }
 
